@@ -10,6 +10,7 @@ var cloneRepos = {
     teamId: '',
     partialReposList: [],
     fullReposList: [],
+    teams: [],
     github: new GitHubApi({
       headers: {
           "user-agent": this.orgName
@@ -28,54 +29,76 @@ var cloneRepos = {
         per_page: "100"
       }, function(err, res) {
         if (err) {
+          console.log("******getTeams******");
           console.log(err);
         }
         this.parseTeamId(res);
       }.bind(this));
     },
     parseTeamId: function(teams) {
-     teams.forEach(function(team) {
-       console.log(team.name);
+      teams.forEach(function(team) {
        if (team.name === this.teamName) {
          this.teamId = team.id;
          this.getRepos();
        }
-     }.bind(this));
+      }.bind(this));
    },
-   getRepos: function() {
+   getRepos: function(page) {
+     var _this = this;
+     page = page || 1;
      this.partialReposList = this.github.orgs.getTeamRepos({
        id: this.teamId,
-       per_page: 100
+       per_page: 100,
+       page: page
      }, function(err, res) {
        if (err) {
+         console.log("******getRepos******");
          console.log(err);
        }
-      this.addToArray(res);
 
-      if (this.github.hasNextPage(res)) {
-        this.github.getNextPage(res, this.headers, function(err, res) {
-          this.getRepos(res);
-        }.bind(this));
-      }
-       console.log(res);
-      this.createRepoDirectory();
+        var nextPage = _this.github.hasNextPage(res);
+
+        if (!nextPage) {
+          _this.addToArray(res);
+          this.createRepoDirectory();
+        } else {
+          //find the next page number. the url is ...?page=X&per_page=100
+          var stringStart = nextPage.indexOf('?page=') + 6,
+            stringEnd = nextPage.indexOf("&"),
+            lenOfString = stringEnd - stringStart,
+            pageNum  = nextPage.substr(stringStart, lenOfString);
+
+          _this.addToArray(res);
+          _this.getRepos(pageNum);
+        }
      }.bind(this));
    },
-   addToArray: function(arr) {
-     arr.forEach(function(item) {
-       this.fullReposList.push(item);
+   removePrivateRepos: function() {
+     this.fullReposList.forEach(function(repo, index) {
+       if (repo.private) {
+         this.fullReposList.splice(index, 1);
+       }
      }.bind(this));
+     this.cloneAllRepos();
+   },
+   addToArray: function(obj) {
+    for (var item in obj) {
+      //console.log(obj[item].name);
+       this.fullReposList.push(obj[item]);
+    }
    },
    createRepoDirectory: function() {
      mkdirp(__dirname + '/repos', function(err) {
       if (err) {
+        console.log("******createRepoDirectory******");
         console.log(err);
       }
-      this.cloneAllRepos();
-     }.bind(this));
+      this.removePrivateRepos();
+    }.bind(this));
    },
 
    cloneAllRepos: function() {
+     console.log(this.fullReposList.length);
      this.fullReposList.forEach(function(repo) {
        simpleGit().clone(repo.git_url, __dirname + '/repos/' + repo.name);
      }.bind(this));
