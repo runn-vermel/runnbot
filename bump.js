@@ -30,38 +30,56 @@ function bump(localPath, typeOfBump, message) {
   }
 
   function loopThroughRepos(dirList, typeOfBump, message, localPath) {
+    var versionyInst,
+        updatedVersiony;
 
     if (typeOfBump === 'patch') {
-      updatedVersiony = versiony.patch();
+      versionyInst = versiony.patch();
     } else if (typeOfBump === 'minor'){
-      updatedVersiony = versiony.minor();
+      versionyInst = versiony.minor();
     } else if (typeOfBump === 'major') {
-      updatedVersiony = versiony.major();
+      versionyInst = versiony.major();
     }
 
     dirList.forEach(function(dir) {
       //console.log(dir);
       process.chdir(dir);
       console.log(dir);
-      try {
-        updatedVersiony
-        .from('bower.json')
-        .to('bower.json')
-        .to('package.json')
-        .end();
+      versionyInst
+      .from('bower.json');
+
+        if (doesFileExist(dir + '/bower.json')) {
+          versionyInst.to('bower.json');
+        }
+
+        if (doesFileExist(dir + '/package.json')) {
+          versionyInst.to('package.json');
+        }
+
+        updatedVersiony = versionyInst.end();
+
         updateHistory(updatedVersiony.version, dir, message,localPath);
-      }
-      catch(e) {
-        return;
-      }
     }.bind(this));
+  }
+
+  function doesFileExist(path) {
+    try {
+      return fs.statSync(path).isFile();
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        return false;
+      } else {
+        throw e;
+      }
+    }
   }
   function updateHistory(version, dir, message, localPath) {
     process.chdir(dir);
+    console.log('history = ' + dir);
     //console.log('update ' + dir);
-    try {
-      var data = fs.readFileSync(dir + '/HISTORY.md'); //read existing contents into data
-      console.log('data = ' + data)
+    if (doesFileExist(dir + '/HISTORY.md')) {
+      var file = dir + '/HISTORY.md';
+      var data = fs.readFileSync(file); //read existing contents into data
       var fd = fs.openSync(file, 'w+');
       var buffer = new Buffer(`
         v${version}
@@ -73,13 +91,9 @@ function bump(localPath, typeOfBump, message) {
       fs.writeSync(fd, buffer, 0, buffer.length); //write new data
       fs.writeSync(fd, data, buffer.length, data.length); //append old data
       //or fs.appendFile(fd, data);
-      
+
       fs.close(fd);
     }
-    catch(e) {
-      return;
-    }
-
   }
   function errFunction(err) {
     console.log(err);
