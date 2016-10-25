@@ -1,12 +1,14 @@
 var pullrepos = require('./pullrepos');
 var bump = require('./bump');
-//strating point, pull all repos
+var cloneRepos = require('/.cloneAllRepos');
+var pullRepos = require('./pullRepos');
+// cloneRepos.main('repos');
 //pullrepos.main('repos');
 
 //add your code here
 
 
 //TODO bump and commit
-bump.main('repos', 'minor', 'this is a test');
+bump.main('repos', 'patch', 'this is a second test');
 
 //TODO push

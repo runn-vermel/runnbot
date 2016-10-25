@@ -2,50 +2,43 @@ var dir = require('node-dir'),
     fs = require("fs"),
     path = require("path"),
     simpleGit = require('simple-git'),
-    exports = module.exports = {};
+    updateRepos = {
+      localPath: process.argv[2] || '',
+      getDirs: function() {
+        //loop through all subdirs
+        var dirList = [];
 
-function pullrepos(localPath) {
-  localPath = localPath || process.argv[2];
-  function getDirs(localPath) {
-  //loop through all subdirs
-  var dirList = [];
+        fs.readdir(__dirname + "/" + this.localPath, function (err, files) {
+        if (err) this.errFunction(err);
 
-  fs.readdir(__dirname + "/" + localPath, function (err, files) {
-    if (err) errFunction(err);
+        dirList = files
+          .map(function (file) {
+            return __dirname + "/" + this.localPath + "/" +file;
+          }.bind(this))
+          .filter(function (file) {
+            return file.substr(0, 1) !== "." && !fs.statSync(file).isFile();
+          }.bind(this)
+        );
 
-    dirList = files
-      .map(function (file) {
-        return __dirname + "/" + localPath + "/" +file;
-      })
-      .filter(function (file) {
-        return file.substr(0, 1) !== "." && !fs.statSync(file).isFile();
+        this.pullrepos(dirList);
+      });
+      },
+      pullrepos: function(dirList) {
+        dirList.forEach(function(repo){
+        process.chdir(repo);
+        // simpleGit().fetch('origin', 'master');
+        // simpleGit().reset('hard');
+        this.simpleGit().pull();
+      }.bind(this));
+      },
+      errFunction: function(err) {
+        console.log(err);
+      },
+      main: function(localPath) {
+        this.localPath = localPath;
+        this.getDirs();
+        return null;
       }
-    );
-    pullrepos(dirList);
-  });
-  }
-
-  function pullrepos(repoList) {
-    repoList.forEach(function(repo){
-      process.chdir(repo);
-      // simpleGit().fetch('origin', 'master');
-      // simpleGit().reset('hard');
-      simpleGit().pull();
-    });
-  }
-
-  function errFunction(err) {
-    console.log(err);
-  }
-
-  function main(localPath) {
-    getDirs(localPath);
-  }
-  return {
-    main: main
-  };
-}
-
-exports.main = function(localPath) {
-  return pullrepos().main(localPath);
 };
+
+module.exports = updateRepos.main;

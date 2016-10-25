@@ -11,6 +11,7 @@ var cloneRepos = {
     partialReposList: [],
     fullReposList: [],
     teams: [],
+    path: '',
     github: new GitHubApi({
       headers: {
           "user-agent": this.orgName
@@ -100,13 +101,15 @@ var cloneRepos = {
    cloneAllRepos: function() {
      console.log(this.fullReposList.length);
      this.fullReposList.forEach(function(repo) {
-       simpleGit().clone(repo.git_url, __dirname + '/repos/' + repo.name);
+       simpleGit().clone(repo.git_url, __dirname + this.path + repo.name);
      }.bind(this));
    },
-   main: function() {
+   main: function(localPath) {
+     this.path = localPath;
      this.authenticate();
      this.getTeams();
+     return null;
    }
 };
 
-cloneRepos.main();
+module.exports = cloneRepos.main;
