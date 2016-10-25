@@ -1,5 +1,6 @@
 var fs = require("fs");
 var versiony = require('versiony');
+var prependFile = require('prepend-file');
 var types= {
   patch: function() {
     versiony.path();
@@ -33,31 +34,31 @@ function bump(localPath, typeOfBump, message) {
     var versionyInst,
         updatedVersiony;
 
-    if (typeOfBump === 'patch') {
-      versionyInst = versiony.patch();
-    } else if (typeOfBump === 'minor'){
-      versionyInst = versiony.minor();
-    } else if (typeOfBump === 'major') {
-      versionyInst = versiony.major();
-    }
+    // if (typeOfBump === 'patch') {
+    //   versionyInst = versiony.patch();
+    // } else if (typeOfBump === 'minor'){
+    //   versionyInst = versiony.minor();
+    // } else if (typeOfBump === 'major') {
+    //   versionyInst = versiony.major();
+    // }
 
     dirList.forEach(function(dir) {
       //console.log(dir);
       process.chdir(dir);
-      console.log(dir);
-      versionyInst
-      .from('bower.json');
 
         if (doesFileExist(dir + '/bower.json')) {
-          versionyInst.to('bower.json');
+        updatedVersiony = versiony[typeOfBump]()
+          .from('bower.json')
+          .to('bower.json')
+          .end();
         }
 
         if (doesFileExist(dir + '/package.json')) {
-          versionyInst.to('package.json');
+          updatedVersiony = versiony[typeOfBump]()
+          .from('package.json')
+          .to('package.json')
+          .end();
         }
-
-        updatedVersiony = versionyInst.end();
-
         updateHistory(updatedVersiony.version, dir, message,localPath);
     }.bind(this));
   }
@@ -75,24 +76,20 @@ function bump(localPath, typeOfBump, message) {
   }
   function updateHistory(version, dir, message, localPath) {
     process.chdir(dir);
-    console.log('history = ' + dir);
     //console.log('update ' + dir);
     if (doesFileExist(dir + '/HISTORY.md')) {
-      var file = dir + '/HISTORY.md';
-      var data = fs.readFileSync(file); //read existing contents into data
-      var fd = fs.openSync(file, 'w+');
-      var buffer = new Buffer(`
+      var PrependMessage = `
         v${version}
         ==================
         * ${message}
 
-        `
-      );
-      fs.writeSync(fd, buffer, 0, buffer.length); //write new data
-      fs.writeSync(fd, data, buffer.length, data.length); //append old data
-      //or fs.appendFile(fd, data);
-
-      fs.close(fd);
+        `;
+      prependFile(dir + '/HISTORY.md', PrependMessage, function(err) {
+        if (err) {
+          errFunction(err);
+        }
+        // Success
+      });
     }
   }
   function errFunction(err) {
