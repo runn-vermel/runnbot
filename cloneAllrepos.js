@@ -1,62 +1,44 @@
-var simpleGit = require('simple-git'),
-    GitHubApi = require('github'),
-    mkdirp = require('mkdirp');
+var mkdirp = require('mkdirp'),
+    shared = require('./shared');
 
 var cloneRepos = (function() {
-  var teamName = process.argv[4] || "Px",
-      orgName = process.argv[5] || "PredixDev",
-      username = process.argv[2],
-      password = process.argv[3],
-      teamId = '',
-      partialReposList = [],
+  var partialReposList = [],
       fullReposList = [],
-      teams = [],
-      path = '',
-      github;
+      teams = [];
 
-    function authenticate() {
-      github.authenticate({
-        type: "basic",
-        username: username,
-        password: password
-      });
-    }
-
-    function getTeams() {
-      github.orgs.getTeams({
-        org: orgName,
+    var getTeams = function() {
+      shared.github.orgs.getTeams({
+        org: shared.orgName,
         per_page: "100"
       }, function(err, res) {
         if (err) {
-          console.log("******getTeams******");
-          console.log(err);
+          shared.errFunction(err);
         }
         parseTeamId(res);
       });
-    }
+    };
 
-    function parseTeamId(teams) {
+    var parseTeamId = function(teams) {
       teams.forEach(function(team) {
-        if (team.name === teamName) {
-         teamId = team.id;
+        if (team.name === shared.teamName) {
+         shared.teamId = team.id;
          getRepos();
         }
       });
-   }
+   };
 
-   function getRepos(page) {
+   var getRepos = function(page) {
      page = page || 1;
-     partialReposList = github.orgs.getTeamRepos({
-       id: teamId,
+     partialReposList = shared.github.orgs.getTeamRepos({
+       id: shared.teamId,
        per_page: 100,
        page: page
      }, function(err, res) {
        if (err) {
-         console.log("******getRepos******");
-         console.log(err);
+         shared.errFunction(err);
        }
 
-        var nextPage = github.hasNextPage(res);
+        var nextPage = shared.github.hasNextPage(res);
 
         if (!nextPage) {
           addToArray(res);
@@ -72,55 +54,63 @@ var cloneRepos = (function() {
           getRepos(pageNum);
         }
      });
-   }
+   };
 
-   function removePrivateRepos() {
+   var removePrivateRepos = function() {
      fullReposList.forEach(function(repo, index) {
        if (repo.private) {
          fullReposList.splice(index, 1);
        }
      });
-     cloneAllRepos();
-   }
 
-   function addToArray(obj) {
+     removeRequestedRepos();
+   };
+
+   var removeRequestedRepos = function() {
+     var repoNameOnly = fullReposList.map(function(repo) {
+       var loc = repo.lastIndexOf("/");
+       return repo.substr(loc + 1);
+     });
+     if (shared.excludedRepos) {
+       shared.excludedRepos.forEach(function(repo) {
+         var index = repoNameOnly.indexOf(repo);
+         if (index > -1) {
+           repoNameOnly.splice(index, 1);
+           fullReposList.splice(index, 1);
+         }
+       });
+     }
+     cloneAllRepos();
+   };
+
+   var addToArray = function(obj) {
     for (var item in obj) {
       //console.log(obj[item].name);
       fullReposList.push(obj[item]);
     }
-   }
+  };
 
-   function createRepoDirectory() {
-     mkdirp(__dirname + "/" + path, function(err) {
+   var createRepoDirectory = function() {
+     mkdirp(__dirname + "/" + shared.localPath, function(err) {
       if (err) {
-        console.log("******createRepoDirectory******");
-        console.log(err);
+        shared.errFunction(err);
       }
       removePrivateRepos();
     });
-   }
+  };
 
-   function cloneAllRepos() {
+   var cloneAllRepos = function() {
      fullReposList.forEach(function(repo) {
-       simpleGit().clone(repo.git_url, __dirname + "/" + path + "/" + repo.name);
+       console.log(repo.git_url);
+       shared.simpleGit().clone(repo.git_url, __dirname + "/" + shared.localPath + "/" + repo.name);
      });
-   }
+   };
 
-   function main(llocalPath, lusername, lpassword, lteam, lorg) {
-     path = llocalPath;
-     username = lusername;
-     password = lpassword;
-     teamName = lteam || "Px";
-     orgName = lorg || "PredixDev";
-     github = new GitHubApi({
-       headers: {
-           "user-agent": orgName
-       }
-     });
-
-     authenticate();
+   var main = function() {
+     shared.authenticate();
      getTeams();
-   }
+   };
+
    return {
      main: main
    };

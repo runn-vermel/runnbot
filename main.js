@@ -1,14 +1,16 @@
-var pullrepos = require('./pullrepos');
 var bump = require('./bump');
 var cloneRepos = require('./cloneAllRepos');
-var pullRepos = require('./pullRepos');
-//cloneRepos.main('repos', 'runn-vermel', '72qz95e6pfWZXt3');
-pullRepos.main('repos');
+var updateRepos = require('./updateRepos');
+var shared = require('./shared');
+
+//cloneRepos.main();
+
+//updateRepos.main();
 
 //add your code here
 
 
 //bump
-//bump.main('repos', 'patch', 'this is a second test');
+bump.main('patch', 'this is a third test');
 
 //TODO push
