@@ -1,25 +1,29 @@
 var fs = require("fs");
 var versiony = require('versiony');
 var prependFile = require('prepend-file');
+var bump = (function() {
+  var localPath,
+      message,
+      typeOfBump;
 
-var bumpVersion = {
-    getDirs: function() {
-      var dirList=[];
-      fs.readdir(__dirname + "/" + this.localPath, function (err, files) {
-       if (err) this.errFunction(err);
+  function getDirs() {
+    var dirList=[];
+    fs.readdir(__dirname + "/" + localPath, function (err, files) {
+     if (err) errFunction(err);
 
-       dirList = files
-         .map(function (file) {
-           return __dirname + "/" + this.localPath + "/" +file;
-         }.bind(this))
-         .filter(function (file) {
-           return file.substr(0, 1) !== "." && !fs.statSync(file).isFile();
-         }.bind(this)
-       );
-       this.loopThroughRepos(dirList);
-      });
-   },
-   loopThroughRepos: function(dirList) {
+     dirList = files
+       .map(function (file) {
+         return __dirname + "/" + localPath + "/" +file;
+       })
+       .filter(function (file) {
+         return file.substr(0, 1) !== "." && !fs.statSync(file).isFile();
+       }
+     );
+     loopThroughRepos(dirList);
+    });
+ }
+
+  function loopThroughRepos(dirList) {
     var updatedVersiony;
 
     dirList.forEach(function(dir) {
@@ -27,22 +31,23 @@ var bumpVersion = {
       process.chdir(dir);
 
         if (doesFileExist(dir + '/bower.json')) {
-        updatedVersiony = versiony[this.typeOfBump]()
+        updatedVersiony = versiony[typeOfBump]()
           .from('bower.json')
           .to('bower.json')
           .end();
         }
 
         if (doesFileExist(dir + '/package.json')) {
-          updatedVersiony = versiony[this.typeOfBump]()
+          updatedVersiony = versiony[typeOfBump]()
           .from('package.json')
           .to('package.json')
           .end();
         }
-        updateHistory(updatedVersiony.version, dir, this.message, this.localPath);
-    }.bind(this));
-  },
-  doesFileExist: function(path) {
+        updateHistory(updatedVersiony.version, dir, message, localPath);
+    });
+  }
+
+  function doesFileExist(path) {
    try {
      return fs.statSync(path).isFile();
     } catch (e) {
@@ -52,34 +57,42 @@ var bumpVersion = {
        throw e;
       }
     }
-  },
-  updateHistory: function(version, dir) {
-  process.chdir(dir);
-  if (doesFileExist(dir + '/HISTORY.md')) {
-    var PrependMessage = `
-      v${version}
-      ==================
-      * ${this.message}
-
-      `;
-    prependFile(dir + '/HISTORY.md', PrependMessage, function(err) {
-      if (err) {
-        this.errFunction(err);
-      }
-      // Success
-    });
   }
-  },
-  errFunction: function(err) {
+
+  function updateHistory(version, dir) {
+    process.chdir(dir);
+    if (doesFileExist(dir + '/HISTORY.md')) {
+      var PrependMessage = `
+        v${version}
+        ==================
+        * ${message}
+
+        `;
+      prependFile(dir + '/HISTORY.md', PrependMessage, function(err) {
+        if (err) {
+          errFunction(err);
+        }
+        // Success
+      });
+    }
+  }
+
+  function errFunction(err) {
     console.log(err);
-  },
-  main: function(localPath, typeOfBump, message) {
-    this.localPath = localPath;
-    this.typeOfBump = typeOfBump;
-    this.message = message;
-    this.getDirs();
-    return null;
   }
-};
 
-module.exports = bumpVersion.main;
+  function main(llocalPath, ltypeOfBump, lmessage) {
+    //update the global vars with what was passed it.
+    localPath = llocalPath;
+    typeOfBump = ltypeOfBump;
+    message = lmessage;
+    getDirs();
+  }
+  return {
+    main: main
+  };
+})();
+
+module.exports = {
+  main: bump.main
+};
