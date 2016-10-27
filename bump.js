@@ -4,8 +4,6 @@ var prependFile = require('prepend-file');
 var shared = require('./shared');
 
 var bump = (function() {
-  var message,
-      typeOfBump;
 
   function loopThroughRepos(err, dirList) {
     if (err) shared.errFunction(err);
@@ -15,32 +13,36 @@ var bump = (function() {
     dirList.forEach(function(dir) {
       //console.log(dir);
       process.chdir(dir);
-
+        bump = (shared.typeOfBump === "major") ? "newMajor" : shared.typeOfBump;
+        console.log('bump =' + bump);
         if (shared.doesFileExist(dir + '/bower.json')) {
-        updatedVersiony = versiony[typeOfBump]()
+        updatedVersiony = versiony
           .from('bower.json')
+          [bump]()
           .to('bower.json')
           .end();
         }
 
         if (shared.doesFileExist(dir + '/package.json')) {
-          updatedVersiony = versiony[typeOfBump]()
+          updatedVersiony = versiony
           .from('package.json')
+          [bump]()
           .to('package.json')
           .end();
         }
-        updateHistory(updatedVersiony.version, dir);
+        shared.updatedVersion = updatedVersiony.version;
+        updateHistory(dir);
     });
   }
 
 
-  function updateHistory(version, dir) {
+  function updateHistory(dir) {
     process.chdir(dir);
     if (shared.doesFileExist(dir + '/HISTORY.md')) {
       var PrependMessage = `
-        v${version}
+        v${shared.updatedVersion}
         ==================
-        * ${message}
+        * ${shared.message}
 
         `;
       prependFile(dir + '/HISTORY.md', PrependMessage, function(err) {
@@ -52,10 +54,7 @@ var bump = (function() {
     }
   }
 
-  function main(ltypeOfBump, lmessage) {
-
-    typeOfBump = ltypeOfBump;
-    message = lmessage;
+  function main() {
     shared.getDirs(loopThroughRepos);
   }
   return {

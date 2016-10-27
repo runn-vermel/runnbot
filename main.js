@@ -1,7 +1,9 @@
+var shared = require('./shared');
 var bump = require('./bump');
 var cloneRepos = require('./cloneAllRepos');
 var updateRepos = require('./updateRepos');
-var shared = require('./shared');
+var release = require("./release");
+const execSync = require('child_process').execSync;
 
 //cloneRepos.main();
 
@@ -9,8 +11,9 @@ var shared = require('./shared');
 
 //add your code here
 
-
+//TODO make bump return promise 
 //bump
-bump.main('patch', 'this is a third test');
+execSync(bump.main(shared.typeOfBump, 'this is my first test'));
 
-//TODO push
+//release
+execSync(release.main());

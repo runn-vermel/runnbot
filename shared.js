@@ -24,6 +24,8 @@ var shared = {
   teamId: '',
   orgName: '',
   localPath: '',
+  message: '',
+  typeOfBump: '',
   github: '',
   authenticate: function() {
     shared.github.authenticate({
@@ -33,6 +35,7 @@ var shared = {
     });
   },
   getDirs: function(callback) {
+
     var dirList=[];
     fs.readdir(__dirname + "/" + shared.localPath, function (err, files) {
      if (err) callback(err);
@@ -58,9 +61,12 @@ var shared = {
 };
 shared.localPath = (argv.localPath) ? argv.localPath : 'repos';
 shared.excludedRepos = (argv.excludedRepos) ? argv.excludedRepos : '';
+shared.typeOfBump = argv.bump;
+shared.message = (argv.message) ? argv.message : (shared.message) ? shared.message : ''; //check if it was passed in as an arguement, and if it was NOT, check if it already has value - might have been set from another user supplied script
 shared.username = argv.username;
 shared.password = argv.password;
-shared.teamName = (argv.teamName) ?argv.teamName : 'Px';
+shared.updatedVersion = '';
+shared.teamName = (argv.teamName) ? argv.teamName : 'Px';
 shared.orgName = (argv.orgName)? argv.orgName : 'PredixDev';
 shared.github = new GitHubApi({
   headers: {
