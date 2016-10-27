@@ -2,60 +2,59 @@ var fs = require("fs");
 var versiony = require('versiony');
 var prependFile = require('prepend-file');
 var shared = require('./shared');
-
+var Promise = require("bluebird");
 var bump = (function() {
 
-  function loopThroughRepos(err, dirList) {
-    if (err) shared.errFunction(err);
-
-    var updatedVersiony;
-
-    dirList.forEach(function(dir) {
-      //console.log(dir);
-      process.chdir(dir);
-        bump = (shared.typeOfBump === "major") ? "newMajor" : shared.typeOfBump;
-        console.log('bump =' + bump);
-        if (shared.doesFileExist(dir + '/bower.json')) {
-        updatedVersiony = versiony
-          .from('bower.json')
-          [bump]()
-          .to('bower.json')
-          .end();
-        }
-
-        if (shared.doesFileExist(dir + '/package.json')) {
-          updatedVersiony = versiony
-          .from('package.json')
-          [bump]()
-          .to('package.json')
-          .end();
-        }
-        shared.updatedVersion = updatedVersiony.version;
-        updateHistory(dir);
-    });
+  function loopThroughRepos(dirList) {
+    return Promise.all(dirList.map(function(dir) {
+      return bump(dir).then(updateHistory);
+    }));
   }
 
+  function bump(dir) {
+    process.chdir(dir);
+      var bump = (shared.typeOfBump === "major") ? "newMajor" : shared.typeOfBump;
+      var updatedVersiony;
+      if (shared.doesFileExist(dir + '/bower.json')) {
+      updatedVersiony = versiony
+        .from('bower.json')
+        [bump]()
+        .to('bower.json')
+        .end();
+      }
 
-  function updateHistory(dir) {
+      if (shared.doesFileExist(dir + '/package.json')) {
+        updatedVersiony = versiony
+        .from('package.json')
+        [bump]()
+        .to('package.json')
+        .end();
+      }
+      return Promise.resolve({updatedVersion: updatedVersiony, dir:dir});
+  }
+
+  function updateHistory(obj) {
+    var dir = obj.dir;
+    var updatedVersion = obj.updatedVersion;
     process.chdir(dir);
     if (shared.doesFileExist(dir + '/HISTORY.md')) {
       var PrependMessage = `
-        v${shared.updatedVersion}
+        v${updatedVersion.version}
         ==================
         * ${shared.message}
 
         `;
-      prependFile(dir + '/HISTORY.md', PrependMessage, function(err) {
-        if (err) {
-          shared.errFunction(err);
-        }
-        // Success
-      });
+      var prependFileAsync = Promise.promisify(prependFile);
+
+      return prependFileAsync(dir + '/HISTORY.md', PrependMessage).then(function() {
+        return Promise.resolve({dir:dir, version:updatedVersion.version});
+      }).error(shared.errFunction);
     }
   }
 
   function main() {
-    shared.getDirs(loopThroughRepos);
+    return shared.getDirs().then(loopThroughRepos)
+    .error(shared.errFunction);
   }
   return {
     main: main

@@ -1,6 +1,7 @@
 var GitHubApi = require('github'),
     fs = require("fs"),
-    argv = require('yargs').argv;
+    argv = require('yargs').argv,
+    Promise = require('bluebird');
 
 var shared = {
   doesFileExist: function(path) {
@@ -36,27 +37,28 @@ var shared = {
   },
   getDirs: function(callback) {
 
-    var dirList=[];
-    fs.readdir(__dirname + "/" + shared.localPath, function (err, files) {
-     if (err) callback(err);
+    var readdir = Promise.promisify(fs.readdir);
+    return readdir(__dirname + "/" + shared.localPath).then(function(files) {
+      var dirList = files
+       .filter(function (file) {
+         if (shared.excludedRepos) {
+          return (shared.excludedRepos.indexOf(file) > -1) ? false : true;
+         } else {
+          return true;
+         }
+       })
+       .map(function (file) {
+         return __dirname + "/" + shared.localPath + "/" +file;
+       })
+       .filter(function (file) {
+         return file.substr(0, 1) !== "." && !fs.statSync(file).isFile();
+       })
+       ;
+       
+       return Promise.resolve(dirList);
+    }).error(shared.errFunction);
+    //  callback(err, dirList);
 
-     dirList = files
-      .filter(function (file) {
-        if (shared.excludedRepos) {
-         return (shared.excludedRepos.indexOf(file) > -1) ? false : true;
-        } else {
-         return true;
-        }
-      })
-      .map(function (file) {
-        return __dirname + "/" + shared.localPath + "/" +file;
-      })
-      .filter(function (file) {
-        return file.substr(0, 1) !== "." && !fs.statSync(file).isFile();
-      })
-      ;
-     callback(err, dirList);
-    });
  }
 };
 shared.localPath = (argv.localPath) ? argv.localPath : 'repos';

@@ -7,16 +7,7 @@ var dir = require('node-dir'),
       var updateRepos = function(err, dirList) {
         if (err) shared.errFunction(err);
         dirList.forEach(function(repo){
-
-          var index = repo.lastIndexOf("/"),
-              repoName = repo.substr(index + 1);
-
-          if (shared.excludedRepos) {
-            if (shared.excludedRepos.indexOf(repoName) > -1) return;
-          }
-
-          process.chdir(repo);
-          shared.simpleGit().fetch('origin', 'master', function(err){if (err) console.log('fetch ' + err + "\n" + repo);})
+          shared.simpleGit(repo).fetch('origin', 'master', function(err){if (err) console.log('fetch ' + err + "\n" + repo);})
           .checkout('master', function(err){if (err) console.log('checkout ' + err + "\n" + repo);})
           .reset(['--hard','origin/master'], function(err){if (err)  console.log('reset' + err + "\n" + repo);})
           .clean('f', ['d'], function(err){if (err) console.log('clean ' + err + "\n" + repo);});

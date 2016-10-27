@@ -3,17 +3,18 @@ var bump = require('./bump');
 var cloneRepos = require('./cloneAllRepos');
 var updateRepos = require('./updateRepos');
 var release = require("./release");
-const execSync = require('child_process').execSync;
+var Promise = require("bluebird");
 
 //cloneRepos.main();
 
-//updateRepos.main();
+updateRepos.main();
 
 //add your code here
 
-//TODO make bump return promise 
+//TODO make bump return promise
 //bump
-execSync(bump.main(shared.typeOfBump, 'this is my first test'));
-
-//release
-execSync(release.main());
+// var dirs = bump.main(shared.typeOfBump);
+// dirs.then(function(dirs) {
+//   release.main(dirs);
+// })
+// .done();
