@@ -24,7 +24,7 @@ var updateDependency = (function() {
       })
       .then((bower) => {
         console.log('write json ' + dir);
-        return fs.writeJson(dir + '/bower.json', bower);
+        return fs.writeJsonAsync(dir + '/bower.json', bower);
       });
   };
 
