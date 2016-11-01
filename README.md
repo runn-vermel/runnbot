@@ -78,6 +78,13 @@ It does this by looping through the specified repos (all|requested|excluded), re
   --dryRunn="false"
   ```
 
+* **--designReposOnly** (*Boolean*) Default: false
+  A boolean that represents whether the requested change should be done only on design repos.
+  Example:
+  ```
+  --designReposOnly="true"
+  ```
+
 * **--localPath** (String) Default: 'repos'
   This string represents where you'd like the cloned repos to live - please note, this is NOT a full path, just the final directory name - the path will be relative to this repo. This is for your own safety - DO NOT USE YOUR WORK FOLDERS WITH RUNNBOT.
   Example:
