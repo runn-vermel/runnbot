@@ -14,14 +14,14 @@ It does this by looping through the specified repos (all|requested|excluded), re
 
 ### How to use this
 1. Clone this repo.
-2. Write your own module. Please read the Expectation section to ensure your module works with Runnbot. Save your module into the modules folder.
+2. Write your own module. Please read the "User Supplied Module" section to ensure your module works with Runnbot. Save your module into the modules folder.
 
 3. Go into the lib folder and run this in your terminal. this is the minimum required:
 
   ```
   node main.js --username="GITHUB_USERNAME" --password="GITHUB_PASSWORD" --bump="patch|minor|major" --message="your commit and history message" --developerModule="myModule"
   ```
-  If this is the first time you're running this script, using the flag --initial="true" will grab all the repos in the specified team/org (the team/org defaults to "Px/PredixDev"), and clone them into your specified path (using the --localPath flag - default is 'repos').
+  If this is the first time you're running this script, using the flag --initial="true" -runnbot will grab all the repos in the specified team/org (the team/org defaults to "Px/PredixDev"), and clone them into your specified path (using the --localPath flag - default is 'repos').
 3. Sit back and enjoy an IPA/Gluten Free Beer.
 
 ### Please Note

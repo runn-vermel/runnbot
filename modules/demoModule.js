@@ -23,16 +23,23 @@ var updateDependency = (function() {
     return fs.readJsonAsync(dir + '/bower.json')
       .then((bower) => {
         //make sure bower has dependencies and a polymer parameter.
-        if (bower.dependencies && bower.dependencies.polymer) {
-          bower.dependencies.polymer = "^1.7.0";
+        if (bower.devDependencies && bower.devDependencies['px-sass-doc']) {
+          bower.devDependencies['px-sass-doc'] = "^0.2.9";
+          return Promise.resolve({bower:bower, changed: true});
+        } else {
+          return Promise.resolve({bower:bower, changed: false});
         }
         //don't forget to return the resolved promise - which is picked up next
-        return Promise.resolve(bower);
+
       })
       //resolved promise is picked up here
-      .then((bower) => {
+      .then((obj) => {
         //and bower is async written back. by promisifying everything inside the fs-extra lib, we ensure we get a promise back our of any fs method.
-        return fs.writeJsonAsync(dir + '/bower.json', bower);
+        if (obj.changed) {
+          return fs.writeJsonAsync(dir + '/bower.json', obj.bower);
+        } else {
+          return Promise.resolve();
+        }
       });
   };
 
