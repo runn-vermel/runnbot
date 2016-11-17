@@ -18,7 +18,7 @@ var changeTextInFile = (function() {
     var includeText = '<style include="px-theme-styles"></style>',
         regEx = new RegExp(includeText, "g");
     return fs.readdirAsync(dir)
-    .then((files) => files.filter((file) => (file !== "index.html" || file !=="demo.html")))
+    .then((files) => files.filter((file) => (file !== "index.html" && file !=="demo.html")))
     .then((files) => files.filter((fileOrDir) => fileOrDir.substr(0, 1) !== "." && fs.statSync(dir + "/" + fileOrDir).isFile()))
     .then((files) => {
 
