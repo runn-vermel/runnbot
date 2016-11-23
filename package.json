@@ -1,7 +1,6 @@
 {
   "name": "runnbot",
-  "version": "1.2.0
-  ",
+  "version": "1.2.0",
   "description": "",
   "main": "gitrepos.js",
   "scripts": {
@@ -22,5 +21,8 @@
     "simple-git": "^1.56.0",
     "versiony": "^1.4.0",
     "yargs": "^6.3.0"
+  },
+  "devDependencies": {
+    "is-there": "^4.3.6"
   }
 }
