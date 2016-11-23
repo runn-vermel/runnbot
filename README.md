@@ -98,6 +98,9 @@ It does this by looping through the specified repos (all|requested|excluded), re
   --excludedRepos=px-app-nav px-dropdown
   ```
 
+* **--includeSeed** (*boolean*) Default: false
+  A boolean that represents whether you want to include the seed in your list.
+
 * **--includePxVisOnly** (*boolean*) Default: false
   A boolean that represents whether you want to include px-vis components only (components that start with px-vis).
 
