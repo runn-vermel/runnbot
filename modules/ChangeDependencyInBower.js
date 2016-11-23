@@ -26,7 +26,6 @@ var updateDependency = (function() {
         // if your condition is met, resolve the promise with 2 parameters: bower, and changed.
         if (bower.devDependencies && bower.devDependencies["px-slider"]) {
           bower.devDependencies["px-slider"] = "^0.7.6"; 
-        }
           // var newDep;
           // for (var key in bower.devDependencies) {
           //   if (key.substr(0,2) === "px") {
