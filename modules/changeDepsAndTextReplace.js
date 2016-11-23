@@ -1,8 +1,9 @@
 
 var Promise = require('bluebird'),
     shared = require('../lib/shared'),
-    fs = Promise.promisifyAll(require('fs-extra'));
-    fileExists = require('file-exists');
+    fs = Promise.promisifyAll(require('fs-extra')),
+    fileExists = require('file-exists'),
+    IsThere = require("is-there");
 
 
 /**
@@ -22,7 +23,8 @@ var changeTextInFile = (function() {
         replaceText = `<link rel="import" href="../../px-theme/px-theme-styles.html">
     <style include="px-theme-styles" is="custom-style"></style>`;
 
-    return fs.readdirAsync(dir + "/test")
+
+    return  fs.readdirAsync(dir + "/test")
     .then((files) => files.filter((file) => (file.substring(file.length-12) == "fixture.html")))
     //.then((files) => files.filter((fileOrDir) => fileOrDir.substr(0, 1) !== "." && fs.statSync(dir + "/" + fileOrDir).isFile()))
     .then((files) => {
@@ -43,6 +45,8 @@ var changeTextInFile = (function() {
   };
 
   var changeDeps = function(dir) {
+
+
     let doesFileExist = fileExists(dir + '/bower.json');
     if (!doesFileExist) return Promise.resolve(dir);
 
@@ -86,6 +90,12 @@ var changeTextInFile = (function() {
    * @return {[Promise]}       [returns a resolved promise.]
    */
   var main = function(dir, cb) {
+    IsThere(dir + "/test", function(res) {
+      if  (!res) {
+        Promise.resolve(dir);
+      }
+    });
+
     changeDeps(dir)
     .then((dir) => removeTextFromFile(dir))
     .then((r) => {

@@ -70,13 +70,8 @@ It does this by looping through the specified repos (all|requested|excluded), re
 
 #### Optional
 
-* **--dryRunn** (*Boolean*) Default: true
-  A boolean indicating whether you'd like the change to stay local (for testing purposes), or go live. On by default to prevent accidental pushes.
-  Example:
-  ```
-  #pushes changes!!
-  --dryRunn="false"
-  ```
+* **--componentReposOnly** (*boolean*) Default: false
+  A boolean that represents whether you want to only make the change on components, excluding design repos, and random non-component repos.
 
 * **--designReposOnly** (*Boolean*) Default: false
   A boolean that represents whether the requested change should be done only on design repos.
@@ -85,18 +80,45 @@ It does this by looping through the specified repos (all|requested|excluded), re
   --designReposOnly="true"
   ```
 
-* **--localPath** (String) Default: 'repos'
-  This string represents where you'd like the cloned repos to live - please note, this is NOT a full path, just the final directory name - the path will be relative to this repo. This is for your own safety - DO NOT USE YOUR WORK FOLDERS WITH RUNNBOT.
+* **--dryRunn** (*Boolean*) Default: true
+  A boolean indicating whether you'd like the change to stay local (for testing purposes), or go live. On by default to prevent accidental pushes.
   Example:
   ```
-  --localPath="somePath"
+  #pushes changes!!
+  --dryRunn="false"
   ```
+
+* **--excludePxVis** (*boolean*) Default: false
+  A boolean that represents whether you want to exclude px-vis components from your list.
 
 * **--excludedRepos** (*Array*, notated by space) Defult: []
   A list of repos you'd like to exclude. Please note the way the array is built - it is space notated, with no quotes or square brackets. Can not be included in at the same time as the --requestedRepos flag.
   Example:
   ```
   --excludedRepos=px-app-nav px-dropdown
+  ```
+
+* **--includePxVisOnly** (*boolean*) Default: false
+  A boolean that represents whether you want to include px-vis components only (components that start with px-vis).
+
+* **--initialRunn** (*Boolean*) Default: false
+  A boolean indicating whether this is the first time the script is run. If turned on, this will clone all the repos under the specified team/org (default "Px"/"Predixdev"), in the specified localPath (default "repos"), and run the supplied script on all the repos.
+  Example:
+  ```
+  --initialRunn="true"
+  ```
+
+* **--localPath** (String) Default: 'repos'
+  This string represents where you'd like the cloned repos to live - please note, this is NOT a full path, just the final directory name - the path will be relative to this repo. This is for your own safety - DO NOT USE YOUR WORK FOLDERS WITH RUNNBOT.
+  Example:
+  ```
+  --localPath="somePath"
+  ```
+* **--orgName** (*String*) Default: PredixDev
+  This Github org name is used during the initial cloning process to determine which repos should be cloned.
+  Example:
+  ```
+  --orgName="SomeOrgName"
   ```
 
 * **--requestedRepos** (*Array*, notated by space) Default: []
@@ -106,23 +128,9 @@ It does this by looping through the specified repos (all|requested|excluded), re
   --requestedRepos=px-app-nav px-dropdown
   ```
 
-* **--initialRunn** (*Boolean*) Default: false
-  A boolean indicating whether this is the first time the script is run. If turned on, this will clone all the repos under the specified team/org (default "Px"/"Predixdev"), in the specified localPath (default "repos"), and run the supplied script on all the repos.
-  Example:
-  ```
-  --initialRunn="true"
-  ```
-
 * **--teamName** (*String*) Default: Px
   This Github team name is used during the initial cloning process to determine which repos should be cloned.
   Example:
   ```
   --teamName="SomeTeamName"
-  ```
-
-* **--orgName** (*String*) Default: PredixDev
-  This Github org name is used during the initial cloning process to determine which repos should be cloned.
-  Example:
-  ```
-  --orgName="SomeOrgName"
   ```
