@@ -24,8 +24,26 @@ var updateDependency = (function() {
       .then((bower) => {
         //make sure bower has dependencies and a polymer parameter.
         // if your condition is met, resolve the promise with 2 parameters: bower, and changed.
-        if (bower.dependencies && bower.dependencies.polymer) {
-          bower.dependencies.polymer = "^1.8.0";
+        if (bower.devDependencies) {
+          // if (bower.devDependencies["px-slider"].substr(0,1) === "~") {
+          //   bower.devDependencies["px-slider"] = "^" + bower.devDependencies["px-slider"].substr(1);
+          // }
+          var newDep;
+          for (var key in bower.devDependencies) {
+            if (key.substr(0,2) === "px") {
+              if (bower.devDependencies[key].substr(0,1) === "#") {
+                  newDep =  "^" + bower.devDependencies[key].substr(2);
+              } else if (bower.devDependencies[key].substr(0,1) === "~" ) {
+                  newDep =  "^" + bower.devDependencies[key].substr(1);
+              } else {
+                newDep = bower.devDependencies[key];
+              }
+
+              console.log(newDep);
+              debugger;
+              bower.devDependencies[key] = newDep;
+            }
+          }
           return Promise.resolve({bower:bower, changed: true});
         } else {
           return Promise.resolve({bower:bower, changed: false});
