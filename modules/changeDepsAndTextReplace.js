@@ -54,7 +54,7 @@ var changeTextInFile = (function() {
       .then((bower) => {
         //make sure bower has dependencies and a polymer parameter.
         // if your condition is met, resolve the promise with 2 parameters: bower, and changed.
-        if ((bower.devDependencies && bower.devDependencies["px-theme"]) || (bower.dependencies && bower.dependencies["px-theme"])) {
+        if ((bower.devDependencies && bower.devDependencies["px-theme"] && bower.devDependencies["px-theme"] !== "^2.0.1") || (bower.dependencies && bower.dependencies["px-theme"] && bower.dependencies["px-theme"] !=="^2.0.1")) {
            if (bower.devDependencies["px-theme"]) {
              bower.devDependencies["px-theme"] = "^2.0.1";
            }
