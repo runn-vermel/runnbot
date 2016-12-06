@@ -15,7 +15,7 @@ var changeTextInFile = (function() {
    * @param  {[String]} dir [a full path to a repo]
    * @return {[Promise]}     [a resolved promise]
    */
-  var removeTextFromFile = function(dir) {
+  var changeTextInFile = function(dir) {
     var initialDir = dir;
     var searchText = `## Code examples help us better understand the issue - follow the [CodePen](http://codepen.io/mdwragg/pen/LNwmpB) or [jsfiddle](https://jsfiddle.net/Lqmcwhw0/3/), templates, which both use polygit, to help explain the issue.`,
         regEx = new RegExp(searchText, "g"),
@@ -50,7 +50,7 @@ var changeTextInFile = (function() {
         return Promise.resolve(dir);
       }
 
-    removeTextFromFile(dir)
+    changeTextInFile(dir)
       .then((r) => {
         cb(null,'this is what returns');
       });
