@@ -9,19 +9,19 @@ It does this by looping through the specified repos (all|requested|excluded), re
 ### User Supplied Module
 
   1. This module should accept the repo's location on the drive as a string (for example, "/users/joe/repos/somerepo") as its only parameter.
-  2. This module should be built as either a standard node module, or a promise. this means it should either have a callback (which should NOT actually call anything back), or return a promise. The supplied module is promisified in the background, which is why this structure is required. There are 2 demo modules included in the modules folder.
+  2. This module should be built as either a standard node module, or a promise. this means it should either have a callback (which should NOT actually call anything back), or return a promise. The supplied module is promisified in the background, which is why this structure is required. There are demo modules included in the modules folder.
   3. You should expect the code in this module to be looped through the specified repos.
 
 ### How to use this
 1. Clone this repo.
 2. Write your own module. Please read the "User Supplied Module" section to ensure your module works with Runnbot. Save your module into the modules folder.
 
-3. Go into the lib folder and run this in your terminal. this is the minimum required:
+3. Go into the lib folder and run this in your terminal. this is the minimum required for a live run. Only the developerModule option is needed for a dry-run:
 
   ```
   node main.js --username="GITHUB_USERNAME" --password="GITHUB_PASSWORD" --bump="patch|minor|major" --message="your commit and history message" --developerModule="myModule"
   ```
-  If this is the first time you're running this script, using the flag --initialRunn="true" -runnbot will grab all the repos in the specified team/org (the team/org defaults to "Px/PredixDev"), and clone them into your specified path (using the --localPath flag - default is 'repos').
+  If this is the first time you're running this script, using the flag --initialRunn="true" - Runnbot will grab all the repos in the specified team/org (the team/org defaults to "Px/PredixDev"), and clone them into your specified path (using the --localPath flag - default is 'repos').
 3. Sit back and enjoy an IPA/Gluten Free Beer.
 
 ### Please Note
@@ -31,7 +31,17 @@ It does this by looping through the specified repos (all|requested|excluded), re
 2. **This is a dangerous tool.** use it wisely. To ensure no accidents happen, the tool runs in dryrunn mode by default - you have to specify --dryrunn="false" for it to push the changes live.
 
 ## Flags
+
 #### Required
+
+* **--developerModule** (*String*) Deafult: ''
+  The name of your module, which should be placed in the modules folder. Do not include the .js extension.
+  Example:
+  ```
+  --developerModule="myModule"
+  ```
+  
+#### Required (live)
 * **--bump** (*String*) Default: ''
   Represents the type of [http://semver.org/](semver) bump you'd like - available options are patch, minor and major.
   Example:
@@ -59,13 +69,6 @@ It does this by looping through the specified repos (all|requested|excluded), re
   Example:
   ```
   --password="aPkBbkiub#5fg"
-  ```
-
-* **--developerModule** (*String*) Deafult: ''
-  The name of your module, which should be placed in the modules folder. Do not include the .js extension.
-  Example:
-  ```
-  --developerModule="myModule"
   ```
 
 #### Optional
@@ -111,12 +114,20 @@ It does this by looping through the specified repos (all|requested|excluded), re
   --initialRunn="true"
   ```
 
-* **--localPath** (String) Default: 'repos'
+* **--localPath** (*String*) Default: 'repos'
   This string represents where you'd like the cloned repos to live - please note, this is NOT a full path, just the final directory name - the path will be relative to this repo. This is for your own safety - DO NOT USE YOUR WORK FOLDERS WITH RUNNBOT.
   Example:
   ```
   --localPath="somePath"
   ```
+
+* **--noTag** (*Boolean*) Default: false
+  This flag should be used if you'd like to make changes, but not bump the bower and package json files, or create new tags.
+  Example:
+  ```
+  --noTag="true"
+  ```
+
 * **--orgName** (*String*) Default: PredixDev
   This Github org name is used during the initial cloning process to determine which repos should be cloned.
   Example:
