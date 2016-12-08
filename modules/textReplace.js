@@ -16,29 +16,30 @@ var changeTextInFile = (function() {
    * @return {[Promise]}     [a resolved promise]
    */
   var changeTextInFile = function(dir) {
-    console.log(`Reading ${dir}...`)
+    console.log(`Reading ${dir}...`);
     var initialDir = dir;
     var searchText = `## Code examples help us better understand the issue - follow the [CodePen](http://codepen.io/mdwragg/pen/LNwmpB) or [jsfiddle](https://jsfiddle.net/Lqmcwhw0/3/), templates, which both use polygit, to help explain the issue.`,
-        regEx = new RegExp(searchText, "g"),
-        replaceText = `## Code examples help us better understand the issue - follow the appropriate codepen for the component by going to https://predixdev.github.io/predix-ui, finding the component in question, and clicking on the pencil icon under the demo.
+        regExSearchString = "## Code examples help us better understand the issue - follow the \\[CodePen\\]\\(http:\/\/codepen.io\/mdwragg\/pen\/LNwmpB\\) or \\[jsfiddle\\]\\(https:\/\/jsfiddle.net\/Lqmcwhw0\/3\/\\), templates, which both use polygit, to help explain the issue\.",
+        regEx = new RegExp(regExSearchString, "g"),
+        replaceText = `## Code examples help us better understand the issue - follow the appropriate codepen for the component by going to https://predix-ui.com, finding the component in question, and clicking on the pencil icon under the demo.
         Once you've created your code example, you can save it under a new url.
-        Please note that you should NOT use the same methods for production as are used in codepen - these are not production ready.`;
+        Please note that you should NOT use the same methods for production as the ones used in codepen - these methods are not production ready.`;
 
 
     return fs.readFileAsync(dir + "/.github/ISSUE_TEMPLATE.md", "utf-8")
       .then((fileText) => {
-        console.log(`Looking at ${dir} file text...`)
+        console.log(`Looking at ${dir} file text...`);
         if (fileText.indexOf(searchText) > -1) {
-          console.log(`Found ${dir} file text...`)
+          console.log(`Found ${dir} file text...`);
           var updatedText = fileText.replace(regEx, replaceText);
           return fs.writeFileAsync(dir + "/.github/ISSUE_TEMPLATE.md", updatedText, {spaces: 2})
             .then(() => {
-              console.log(`Rewrote ${dir} file...`)
+              console.log(`Rewrote ${dir} file...`);
               return Promise.resolve(initialDir);
             });
         }
         else {
-          console.log(`No ${dir} file text...`)
+          console.log(`No ${dir} file text...`);
           return Promise.resolve(initialDir);
         }
       });
