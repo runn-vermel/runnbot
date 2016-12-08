@@ -6,7 +6,7 @@ This bot is intended to cut down on time maintaining and updating a large number
 It does this by looping through the specified repos (all|requested|excluded), resetting them, running a user supplied script, doing a bump (patch|minor|major) on  the bower/package/HISTORY files, doing a git commit and tag, and pushing the commits and tags back up to github.
 
 ###initialRunn
-The initialRunn mode does a git pull of all repos associated with the px on github.com, and places them inside the specified localPath (default is "repos"), within the Runnbot folder. The username and password parameters are required. 
+The initialRunn mode does a git pull of all repos associated with the px on github.com, and places them inside the specified localPath (default is "repos"), within the Runnbot folder. The username and password parameters are required.
 
 
 ### User Supplied Module
@@ -125,7 +125,7 @@ The initialRunn mode does a git pull of all repos associated with the px on gith
   ```
 
 * **--noTag** (*Boolean*) Default: false
-  This flag should be used if you'd like to make changes, but not bump the bower and package json files, or create new tags.
+  This flag should be used if you'd like to make changes, but not bump the bower and package json files, or create new tags. requires the username, password, and message parameters.
   Example:
   ```
   --noTag="true"
