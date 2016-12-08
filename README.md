@@ -5,6 +5,9 @@ This bot is intended to cut down on time maintaining and updating a large number
 
 It does this by looping through the specified repos (all|requested|excluded), resetting them, running a user supplied script, doing a bump (patch|minor|major) on  the bower/package/HISTORY files, doing a git commit and tag, and pushing the commits and tags back up to github.
 
+###initialRunn
+The initialRunn mode does a git pull of all repos associated with the px on github.com, and places them inside the specified localPath (default is "repos"), within the Runnbot folder. The username and password parameters are required. 
+
 
 ### User Supplied Module
 
@@ -40,7 +43,7 @@ It does this by looping through the specified repos (all|requested|excluded), re
   ```
   --developerModule="myModule"
   ```
-  
+
 #### Required (live)
 * **--bump** (*String*) Default: ''
   Represents the type of [http://semver.org/](semver) bump you'd like - available options are patch, minor and major.
