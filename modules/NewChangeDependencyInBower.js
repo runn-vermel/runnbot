@@ -18,7 +18,7 @@ var updateDependency = (function() {
   var checkIfBowerExists = function(dirPath) {
     return new Promise((resolve, reject) => {
       let bowerPath = `${dirPath}/bower.json`;
-      fs.stat(bowerPath, (err, stats) => {
+      fs.stat(bowerPath, (err, stat) => {
         if (err) resolve(false); // If there's an error, resolve false
         if (stat.isFile()) resolve(true); // If it is a file, resolve true
         resolve(false); // Otherwise, default to resolve false
@@ -84,7 +84,7 @@ var updateDependency = (function() {
         if (!resultObj.changed) return Promise.resolve();
 
         // Otherwise, write the file and return result
-        return fs.writeJsonAsync(dir + '/bower.json', resultObj.bower, {spaces: 2});
+        return fs.writeJsonAsync(dirPath + '/bower.json', resultObj.bower, {spaces: 2});
       });
   };
 
@@ -93,16 +93,16 @@ var updateDependency = (function() {
    * attempts to update dependencies and devDependencies for the modules we
    * want to change versions of.
    *
-   * @param  {String} dir - a full path to a repo
+   * @param  {String} dirPath - a full path to a repo
    * @param  {Function} cb - callback function needed to promisify this module
    */
-  var main = function(dir, cb) {
-    checkIfBowerExists(dir)
+  var main = function(dirPath, cb) {
+    checkIfBowerExists(dirPath)
       .then((bowerExists) => {
         // If there's no bower.json file, callback immediately and stop messing with this directory.
         if (!bowerExists) cb(null);
         // Otherwise, continue on to try to change dependency
-        return changeDependencyIfExists(dir, 'px-polymer-font-awesome', '^1.0.0', { includeDevDependencies: true });
+        return changeDependencyIfExists(dirPath, 'px-polymer-font-awesome', '^1.0.0', { includeDevDependencies: true });
       })
       .then(() => {
         // At this point, we should be finished. Callback and finish up.
