@@ -16,6 +16,7 @@ var changeTextInFile = (function() {
    * @return {[Promise]}     [a resolved promise]
    */
   var changeTextInFile = function(dir) {
+    console.log(`Reading ${dir}...`)
     var initialDir = dir;
     var searchText = `## Code examples help us better understand the issue - follow the [CodePen](http://codepen.io/mdwragg/pen/LNwmpB) or [jsfiddle](https://jsfiddle.net/Lqmcwhw0/3/), templates, which both use polygit, to help explain the issue.`,
         regEx = new RegExp(searchText, "g"),
@@ -25,14 +26,35 @@ var changeTextInFile = (function() {
 
 
     return fs.readFileAsync(dir + "/.github/ISSUE_TEMPLATE.md", "utf-8")
-    .then((fileText) => {
-    if (fileText.indexOf(searchText) > -1) {
-      var updatedText = fileText.replace(regEx, replaceText);
-      fs.writeFileAsync(dir + "/.github/ISSUE_TEMPLATE.md", updatedText, {spaces: 2})
-      .then(() => Promise.resolve(initialDir));
-    } else {
-      return Promise.resolve(initialDir);
-    }
+      .then((fileText) => {
+        console.log(`Looking at ${dir} file text...`)
+        if (fileText.indexOf(searchText) > -1) {
+          console.log(`Found ${dir} file text...`)
+          var updatedText = fileText.replace(regEx, replaceText);
+          return fs.writeFileAsync(dir + "/.github/ISSUE_TEMPLATE.md", updatedText, {spaces: 2})
+            .then(() => {
+              console.log(`Rewrote ${dir} file...`)
+              return Promise.resolve(initialDir);
+            });
+        }
+        else {
+          console.log(`No ${dir} file text...`)
+          return Promise.resolve(initialDir);
+        }
+      });
+  };
+
+  /**
+   * Checks if the directory '.github/' directory exists under `dir` path
+   *
+   * @param  {String} dir - Full system path to a directory to check for '.github/' sub-directory
+   * @return {Promise} - Resolves with `true` if '.github' exists, otherwise resolves `false` (should never reject)
+   */
+  var doesGithubDirExist = function(dir) {
+    return new Promise((resolve, reject) => {
+      IsThere(dir + "/.github", function(dirStatus) {
+        resolve(dirStatus);
+      });
     });
   };
 
@@ -44,21 +66,22 @@ var changeTextInFile = (function() {
    * @return {[Promise]}       [returns a resolved promise.]
    */
   var main = function(dir, cb) {
+    return doesGithubDirExist(dir)
+      .then((dirExists) => {
+        // If the `.github` directory doesn't exist, we'll skip this task
+        if (!dirExists) {
+          return Promise.resolve(dir);
+        }
 
-    IsThere(dir + "/.github", function(res) {
-      if  (!res) {
-        return Promise.resolve(dir);
-      }
-
-    changeTextInFile(dir)
-      .then((r) => {
-        cb(null,'this is what returns');
+        // Otherwise, call the method to change the text
+        return changeTextInFile(dir);
+      })
+      .then(() => {
+        // Success, we're done. Hit the callback.
+        cb(null,dir);
       });
-
-    });
-
-
   };
+
   return {
     main : main
   };
