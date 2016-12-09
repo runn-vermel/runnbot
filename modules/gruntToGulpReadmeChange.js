@@ -53,7 +53,6 @@ From the component's directory run:
               }
               if (fileText.indexOf(searchTextArr[i]) > -1) {
                 console.log(`Found ${dir} file text...`);
-                debugger;
                 updatedText = fileText.replace(term, replaceTextArr[i]);
                 return fs.writeFileAsync(dir + "/README.md", updatedText, {spaces: 2})
                   .then(() => {
@@ -79,13 +78,15 @@ From the component's directory run:
     shared.doesFileExist(dir, 'README.md')
     .then((fileExists) => {
       // If there's no bower.json file, callback immediately and stop messing with this directory.
-      if (!fileExists) cb(null);
-
-      return changeTextInFile(dir)
-      .then(() => {
-        // Success, we're done. Hit the callback.
-        cb(null,dir);
-      });
+      if (!fileExists) {
+        cb(null);
+      } else {
+        return changeTextInFile(dir)
+        .then(() => {
+          // Success, we're done. Hit the callback.
+          cb(null,dir);
+        });
+      }
     });
   };
 
