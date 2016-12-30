@@ -76,6 +76,11 @@ var redirectGhp = (function() {
     return fs.removeAsync(homeDir + '/gitTemp/' + dirName);
   };
 
+  var changeGithubDescriptionAndUrl = function(dirName) {
+    return shared.createGithubInstance()
+    .then(shared.github.repos.edit({owner: 'predixdev', name: dirName, repo: dirName, homepage: 'https://www.predix-ui,com/#/modules/' + dirName, description: 'For a live demo of this predix UI component, visit'}));
+  };
+
   /**
    * our Main function. calls the removeMasterBranch function, and once that's done, calls the callback (cb), which doesn't actually do anything
    * but is needed for this module to be promisified.
@@ -98,6 +103,7 @@ var redirectGhp = (function() {
     .then(() => copyGitDirBack(dir, dirName))
     .then(() => emptyTempDir(dirName))
     .then(() => removeTempFolder(dirName))
+    .then(() => changeGithubDescriptionAndUrl(dirName))
     .then(() => {
       // Success, we're done. Hit the callback.
       cb(null,dir);
