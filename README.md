@@ -6,7 +6,7 @@ This bot is intended to cut down on time maintaining and updating a large number
 It does this by looping through the specified repos (all|requested|excluded), resetting them, running a user supplied script, doing a bump (patch|minor|major) on  the bower/package/HISTORY files, doing a git commit and tag, and pushing the commits and tags back up to github.
 
 ###initialRunn
-The initialRunn mode does a git pull of all repos associated with the px on github.com, and places them inside the specified localPath (default is "repos"), within the Runnbot folder. The username and password parameters are required.
+The initialRunn mode does a git pull of all repos associated with the org specified (default PredixDev) on github.com, and places them inside the specified localPath (default location is "repos"), within the Runnbot folder. The username and password parameters are required.
 
 
 ### User Supplied Module
@@ -22,9 +22,9 @@ The initialRunn mode does a git pull of all repos associated with the px on gith
 3. Go into the lib folder and run this in your terminal. this is the minimum required for a live run. Only the developerModule option is needed for a dry-run:
 
   ```
-  node main.js --username="GITHUB_USERNAME" --password="GITHUB_PASSWORD" --bump="patch|minor|major" --message="your commit and history message" --developerModule="myModule"
+  node main.js --username="GITHUB_USERNAME" --password="GITHUB_PASSWORD" --bump="patch|minor|major" --message="your commit and history message" --developerModule="myModule" --dryRunn="false"
   ```
-  If this is the first time you're running this script, using the flag --initialRunn="true" - Runnbot will grab all the repos in the specified team/org (the team/org defaults to "Px/PredixDev"), and clone them into your specified path (using the --localPath flag - default is 'repos').
+ 
 3. Sit back and enjoy an IPA/Gluten Free Beer.
 
 ### Please Note
@@ -114,7 +114,7 @@ The initialRunn mode does a git pull of all repos associated with the px on gith
   A boolean that represents whether you want to include px-vis components only (components that start with px-vis).
 
 * **--initialRunn** (*Boolean*) Default: false
-  A boolean indicating whether this is the first time the script is run. If turned on, this will clone all the repos under the specified team/org (default "Px"/"Predixdev"), in the specified localPath (default "repos"), and run the supplied script on all the repos.
+  A boolean indicating whether this is the first time the script is run. If turned on, this will clone all the repos under the specified team/org (default "Px"/"Predixdev"), in the specified localPath (default "repos"). Should be run on its own.
   Example:
   ```
   --initialRunn="true"
