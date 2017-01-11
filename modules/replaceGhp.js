@@ -28,11 +28,7 @@ var replaceGhp = (function() {
    * @param newGhp - the full GHP shell script
    */
    var replaceGhp = function(newGhp, dir) {
-    if (shared.doesFileExist(dir + '/scripts/', 'ghp.sh')) {
-      return fs.writeFileAsync(dir + '/scripts/ghp.sh', newGhp, 'utf8');
-    } else {
-      return Promise.resolve();
-    }
+    return fs.writeFileAsync(dir + '/scripts/ghp.sh', newGhp, 'utf8');
    };
   /**
    * our Main function. calls the runScript function, and once that's done, calls the callback (cb), which doesn't actually do anything
@@ -43,12 +39,30 @@ var replaceGhp = (function() {
    */
   var main = function(dir, cb) {
 
-    return readNewGhp(dir)
+    return shared.doesDirExist(dir, 'scripts')
+    .then((dirExists) => {
+      if (dirExists) {
+        if (shared.doesFileExist(dir + '/scripts/', 'ghp.sh')) {
+          return readNewGhp(dir);
+        } else {
+          throw new Error('no_new_ghp');
+        }
+      }  else {
+        throw new Error('no_scripts_folder');
+      }
+    })
     .then((newGhp) => replaceGhp(newGhp, dir))
-      .then(() => {
-        // Success, we're done. Hit the callback.
+    .then(() => {
+      // Success, we're done. Hit the callback.
+      cb(null,dir);
+    })
+    .catch((e) => {
+      if (e.message === 'no_scripts_folder' || e.message === 'no_new_ghp') {
         cb(null,dir);
-      });
+      } else {
+        cb(e);
+      }
+    });
   };
 
   return {
