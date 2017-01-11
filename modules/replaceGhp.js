@@ -1,23 +1,39 @@
 
 var Promise = require('bluebird'),
-    shared = require('../lib/shared');
-
+    shared = require('../lib/shared'),
+    fs = Promise.promisifyAll(require('fs-extra')),
+    path = require('path');
 
 
 /**
  * our IIFE function
  */
-var runScript = (function() {
+var replaceGhp = (function() {
 
   /**
-   * Runs the shell script per repo
-   * @return {[Promise]} [either resolve or reject.]
+   * Reads the contents of the sample GHP shell script
+   * @return {[Promise]} [contents of the sample GHP shell script]
    */
-  var runScript = function(dir) {
-    shared.execAsync('', dir)
-    .then(() => Promise.resolve());
+  var readNewGhp = function(dir) {
+    console.log('process.cwd = ' + process.cwd());
+    var pathToGhp = path.join(process.cwd(), '../modules/ghp.sh');
+    return fs.readFileAsync(pathToGhp, "utf-8");
   };
 
+  /**
+   *
+   * This method takes in the new ghp shell script, and replaces the contents of the existing
+   * shell script
+   * @method replaceGhp
+   * @param newGhp - the full GHP shell script
+   */
+   var replaceGhp = function(newGhp, dir) {
+    if (shared.doesFileExist(dir + '/scripts/', 'ghp.sh')) {
+      return fs.writeFileAsync(dir + '/scripts/ghp.sh', newGhp, 'utf8');
+    } else {
+      return Promise.resolve();
+    }
+   };
   /**
    * our Main function. calls the runScript function, and once that's done, calls the callback (cb), which doesn't actually do anything
    * but is needed for this module to be promisified.
@@ -27,7 +43,8 @@ var runScript = (function() {
    */
   var main = function(dir, cb) {
 
-    return runScript(dir)
+    return readNewGhp(dir)
+    .then((newGhp) => replaceGhp(newGhp, dir))
       .then(() => {
         // Success, we're done. Hit the callback.
         cb(null,dir);
@@ -40,5 +57,5 @@ var runScript = (function() {
 })();
 
 module.exports = {
-  main: runScript.main
+  main: replaceGhp.main
 };
