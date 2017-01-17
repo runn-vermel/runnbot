@@ -39,6 +39,15 @@ var redirectGhpFromPredixdev = (function() {
     });
   };
 
+  var isDirInList = function(dirName) {
+      var reposWithGhp = ["px-spacing-design","px-layout","px-normalize-design","px-alert-label","px-vis-xy-chart","px-calendar-picker","px-simple-bar-chart","px-box-sizing-design","px-flexbox-design","px-vis-polar","px-helpers-design","px-file-upload","px-inbox","px-rangepicker","px-viewport-design","px-card","px-spinner","px-percent-circle","px-modal","px-page","px-app-nav","px-sample-cards","px-demo-helpers","px-meta-lists-design","px-meta-buttons-design","px-defaults-design","px-action-sheet","px-chart","px-input-group-design","px-navbar","px-dropdown","px-data-table","px-starter-kit-design","px-code-design","px-simple-line-chart","px-list-bare-design","px-widget-cards","px-login","px-drawer","px-widths-tools-design","px-deck-selector","px-popover","px-iconography-design","px-table-view","px-list-inline-design","px-clearfix-design","px-actionable-text-icons-design","px-datetime-range-field","px-datetime-picker","px-toggle-design","px-datetime-common","px-vis-radar","px-vis-spark","px-progress-bar","px-box-design","px-button-group-design","px-widths-responsive-design","px-flag-design","px-datetime-range-panel","px-demo-snippet","px-overlay","px-tooltip","px-widths-design","px-simple-horizontal-bar-chart","px-tables-design","px-datetime-field","px-kpi","px-spacing-responsive-design","px-vis-timeseries","px-vis-pie-chart","px-typography-design","px-slider","px-functions-design","px-timeline","px-typeahead","px-context-browser","px-mixins-design","px-polymer-font-awesome","px-simple-win-loss-chart","px-headings-design"];
+      if (reposWithGhp.indexof(dirName) > -1) {
+        return Promise.resolve();
+      } else {
+        throw new Error('noGhp');
+      }
+  };
+
   /**
    * create the gh-pages orphan branch
    * @param  {[String]} dir [the path to the current repo]
@@ -85,13 +94,13 @@ var redirectGhpFromPredixdev = (function() {
      * @param  {[String]} dir [the path to the current repo]
      * @return {[Promise]}     [resolve or reject]
      */
-    var gitAddCommitPush = function(dir) {
+    var gitAddCommitPush = function(dir, dirName) {
       return git('add index.html', {cwd:dir})
               .then(() => {
                 return git('commit -m "adding redirect to predix-ui.com"',{cwd:dir});
               })
               .then(() => {
-                return git('push origin gh-pages', {cwd:dir});
+                return git('push --repo="https://' + shared.username + ':' + shared.password + '@github.com/PredixDev/' + dirName + '"', {cwd:dir, });
               });
     };
 
@@ -128,13 +137,14 @@ var redirectGhpFromPredixdev = (function() {
         dirName = dir.substr(lastIndexOf + 1);
 
     return shared.createGithubInstance()
-    .then(() => removeGhpBranch(dir, dirName))
+    //.then(() => removeGhpBranch(dir, dirName))
+    .then(() => isDirInList(dir))
     .then(() => deleteLocalGhp(dir))
     .then(() => createOrphanBranch(dir))
     .then(() => createFile(dir))
     .then(() => addRedirect(dir))
     .then(() => gitReset(dir))
-    .then(() => gitAddCommitPush(dir))
+    .then(() => gitAddCommitPush(dir, dirName))
     .then(() => changeGithubDescription(dirName))
     .then(() => {
       // Success, we're done. Hit the callback.
@@ -144,7 +154,7 @@ var redirectGhpFromPredixdev = (function() {
       console.dir(e);
       var doesNotExist ="Reference does not exist";
       console.log('message = '+ (e.code === 422));
-      if (e.code === 422) {
+      if (e.code === 422 || e.message === "noGhp") {
         console.log(doesNotExist + ' but, we\'ll just move on');
         cb(null,dir);
       } else {
