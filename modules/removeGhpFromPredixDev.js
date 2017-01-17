@@ -9,68 +9,113 @@ var Promise = require('bluebird'),
  */
 var redirectGhpFromPredixdev = (function() {
 
-/**
- * This function deletes all the files except the .git folder
- * @param  {[String]} dir [the path to the current repo]
- * @return {[Promise]}     [resolve or reject]
- */
-  var deleteFiles = function(dir) {
-    console.log("deleting files in " + dir);
-     //process.chdir(dir);
-    return del([dir + '/**/*', '!' + dir + '/.git', '!' + dir + '/.git/.*', '!' + dir + '/.git/**'],{dot: true,cwd: dir});
-  };
-
   /**
-   * checks out the gh-pages, since that's where we want to save our changes
+   * Use the github API to remote the current gh-pages branch
    * @param  {[String]} dir [the path to the current repo]
    * @return {[Promise]}     [resolve or reject]
    */
-  var checkoutGhPages = function(dir) {
-    console.log("checking out gh-pages");
-    return git('checkout gh-pages', {cwd: dir});
-  };
-
-/**
- * creates the index.html file
- * @param  {[String]} dir [the path to the current repo]
- * @return {[Promise]}     [resolve or reject]
- */
-  var createFile = function(dir) {
-    var filePath = dir + '/index.html';
-    return fs.ensureFileAsync(filePath);
+  var removeGhpBranch = function(dir, dirName) {
+    return shared.github.gitdata.deleteReference({owner: 'PredixDev', repo: dirName, ref: 'heads/gh-pages'})
+            .then((res) => {
+              if (res.meta.status === "204 No Content") {
+                console.log("branch was deleted in " + dirName);
+                return Promise.resolve();
+              } else {
+                Promise.reject('response wasn\'t right from Github when deleting Branch in ' + dirName + ' res is ' + res.status);
+              }
+            });
   };
 
   /**
-   * adds an index.html page with a re-direct to the correct module on the predix-ui.com site.
+   * we have to delete the local branch, before we can create an orphan branch
    * @param  {[String]} dir [the path to the current repo]
    * @return {[Promise]}     [resolve or reject]
    */
-  var addRedirect = function(dir) {
-    console.log("adding re-direct");
-    var lastIndexOf = dir.lastIndexOf('/'),
-        dirName = dir.substr(lastIndexOf + 1),
-        redirect = '<META http-equiv=refresh content="0;URL=https://www.predix-ui.com/#/module/' + dirName + '">',
-        filePath = dir + '/index.html';
-    return fs.writeFileAsync(filePath, redirect)
-             .then(() => Promise.resolve(dir));
-  };
-
-  var changeGithubDescription = function(dirName) {
-    console.log("github stuff");
-    return shared.createGithubInstance()
-    .then(() => {
-      console.log("instance created, no change description");
-      return shared.github.repos.edit({owner: 'PredixDev', name: dirName, repo: dirName, homepage: 'https://www.predix-ui.com/#/modules/' + dirName, description: 'For a live demo of this predix UI component, visit'}, (e) => {
-        if (!e) {
-          console.log("promise resovled");
-          return Promise.resolve();
-        } else {
-          console.log("promise rejected");
-          return Promise.reject(e);
-        }
-      });
+  var deleteLocalGhp = function(dir) {
+    console.log("delete local gh-pages branch");
+    return git('branch -D gh-pages', {cwd: dir})
+    .catch((e) => {
+      return Promise.resolve();
     });
   };
+
+  /**
+   * create the gh-pages orphan branch
+   * @param  {[String]} dir [the path to the current repo]
+   * @return {[Promise]}     [resolve or reject]
+   */
+  var createOrphanBranch = function(dir) {
+    console.log("create orphan gh-pages branch");
+    return git('checkout --orphan gh-pages', {cwd: dir});
+  };
+
+  /**
+   * creates the index.html file
+   * @param  {[String]} dir [the path to the current repo]
+   * @return {[Promise]}     [resolve or reject]
+   */
+    var createFile = function(dir) {
+      console.log("create file");
+      var filePath = dir + '/index.html';
+      return fs.ensureFileAsync(filePath);
+    };
+
+    /**
+     * adds an index.html page with a re-direct to the correct module on the predix-ui.com site.
+     * @param  {[String]} dir [the path to the current repo]
+     * @return {[Promise]}     [resolve or reject]
+     */
+    var addRedirect = function(dir) {
+      var lastIndexOf = dir.lastIndexOf('/'),
+          dirName = dir.substr(lastIndexOf + 1),
+          redirect = '<META http-equiv=refresh content="0;URL=https://www.predix-ui.com/#/modules/' + dirName + '">',
+          filePath = dir + '/index.html';
+
+          console.log("adding re-direct for " + dirName);
+
+      return fs.writeFileAsync(filePath, redirect)
+               .then(() => Promise.resolve(dir));
+    };
+
+    var gitReset = function(dir) {
+      return git('reset', {cwd:dir});
+    };
+    /**
+     * add, commit and push the index.html file
+     * @param  {[String]} dir [the path to the current repo]
+     * @return {[Promise]}     [resolve or reject]
+     */
+    var gitAddCommitPush = function(dir) {
+      return git('add index.html', {cwd:dir})
+              .then(() => {
+                return git('commit -m "adding redirect to predix-ui.com"',{cwd:dir});
+              })
+              .then(() => {
+                return git('push origin gh-pages', {cwd:dir});
+              });
+    };
+
+    /**
+     * we also want to change the description of each repo to point to the correct url on predix-ui.com
+     * @param  {[String]} dirName [the name of the current repo]
+     * @return {[Promise]}     [resolve or reject]
+     */
+    var changeGithubDescription = function(dirName) {
+      console.log("github stuff");
+      return shared.github.repos.edit({owner: 'PredixDev', name: dirName, repo: dirName, homepage: 'https://www.predix-ui.com/#/modules/' + dirName, description: 'For a live demo of this predix UI component, visit'})
+      .then((res) => {
+          if (res.meta.status === "200 OK") {
+            return Promise.resolve();
+          } else {
+            return Promise.reject('description change failed on ' + dirName + 'with error' + res.status);
+          }
+      })
+      .catch((e) => {
+        console.log('description change failed on ' + dirName + 'with error' + e);
+        return Promise.resolve();
+      });
+    };
+
   /**
    * our Main function. calls the removeMasterBranch function, and once that's done, calls the callback (cb), which doesn't actually do anything
    * but is needed for this module to be promisified.
@@ -82,14 +127,29 @@ var redirectGhpFromPredixdev = (function() {
     var lastIndexOf = dir.lastIndexOf('/'),
         dirName = dir.substr(lastIndexOf + 1);
 
-    return checkoutGhPages(dir)
-    .then(() => deleteFiles(dir))
+    return shared.createGithubInstance()
+    .then(() => removeGhpBranch(dir, dirName))
+    .then(() => deleteLocalGhp(dir))
+    .then(() => createOrphanBranch(dir))
     .then(() => createFile(dir))
     .then(() => addRedirect(dir))
-    //.then(() => changeGithubDescription(dirName))
+    .then(() => gitReset(dir))
+    .then(() => gitAddCommitPush(dir))
+    .then(() => changeGithubDescription(dirName))
     .then(() => {
       // Success, we're done. Hit the callback.
-      cb(null,dir);
+
+    })
+    .catch((e) => {
+      console.dir(e);
+      var doesNotExist ="Reference does not exist";
+      console.log('message = '+ (e.code === 422));
+      if (e.code === 422) {
+        console.log(doesNotExist + ' but, we\'ll just move on');
+        cb(null,dir);
+      } else {
+        return Promise.reject(e);
+      }
     });
   };
 
