@@ -24,7 +24,7 @@ The initialRunn mode does a git pull of all repos associated with the org specif
   ```
   node main.js --username="GITHUB_USERNAME" --password="GITHUB_PASSWORD" --bump="patch|minor|major" --message="your commit and history message" --developerModule="myModule" --dryRunn="false"
   ```
- 
+
 3. Sit back and enjoy an IPA/Gluten Free Beer.
 
 ### Please Note
@@ -81,7 +81,7 @@ The initialRunn mode does a git pull of all repos associated with the org specif
 
 * **--concurrency** (*Number*) Default: 500
   A number that represent the number of concurrencies you'd like to have running at the same time. Good for slower machines, or if using something like Ruby that might time out.
-  
+
 * **--designReposOnly** (*Boolean*) Default: false
   A boolean that represents whether the requested change should be done only on design repos.
   Example:
@@ -154,3 +154,5 @@ The initialRunn mode does a git pull of all repos associated with the org specif
   ```
   --teamName="SomeTeamName"
   ```
+* **--travisKey** (*String*) Default: ''
+  A travis key you'd like to encrypt. Use with the addKeyToTravis module.

@@ -18,7 +18,7 @@
     "node-dir": "^0.1.16",
     "prepend-file": "^1.3.0",
     "ps-node": "^0.1.4",
-    "shelljs": "^0.7.5",
+    "shelljs": "^0.7.6",
     "simple-git": "^1.56.0",
     "versiony": "^1.4.0",
     "yargs": "^6.3.0"
