@@ -16,6 +16,9 @@ var addKeyToTravis = (function() {
    * @return {Boolean}     [description]
    */
   var checkForTravisFile = function(dir) {
+    var lastIndexOf = dir.lastIndexOf("/"),
+        dirName = dir.substr(lastIndexOf + 1);
+    console.log("checking for .travis.yml file in " + dirName);
     return shared.doesFileExist(dir, '.travis.yml');
   };
 
@@ -26,6 +29,8 @@ var addKeyToTravis = (function() {
   var addKeyToTravis = function(dir) {
     var lastIndexOf = dir.lastIndexOf("/"),
         dirName = dir.substr(lastIndexOf + 1);
+
+    console.log("adding travis key to " + dirName);
 
     return shared.execAsync('travis encrypt cloudflare="' + shared.travisKey + '" -r PredixDev/' + dirName + ' --add', dir);
   };
@@ -44,7 +49,9 @@ var addKeyToTravis = (function() {
       if (fileExists) {
         return addKeyToTravis(dir);
       } else {
-        console.log("no travis file");
+        var lastIndexOf = dir.lastIndexOf("/"),
+            dirName = dir.substr(lastIndexOf + 1);
+        console.log("no travis file in " + dirName);
         return Promise.resolve();
       }
     })
