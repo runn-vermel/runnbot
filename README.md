@@ -126,7 +126,11 @@ The initialRunn mode does a git pull of all repos associated with the org specif
   ```
   --localPath="somePath"
   ```
-
+* **--noReset** (*boolean*) Default: false
+  This flag allows you to not reset the repos before running your change - good to use when you have to make a change outside of runnbot (such as a shells script), but still want to push your changes.
+  ```
+  --noReset="true"
+  ```
 * **--noTag** (*Boolean*) Default: false
   This flag should be used if you'd like to make changes, but not bump the bower and package json files, or create new tags. requires the username, password, and message parameters.
   Example:

@@ -30,9 +30,9 @@ var addKeyToTravis = (function() {
     var lastIndexOf = dir.lastIndexOf("/"),
         dirName = dir.substr(lastIndexOf + 1);
 
-    console.log("adding travis key to " + dirName);
+    console.log("adding cloudflrae zone identifier to " + dirName);
 
-    return shared.execAsync('travis encrypt cloudflare="' + shared.travisKey + '" -r PredixDev/' + dirName + ' --add', dir);
+    return shared.execAsync('travis encrypt cloudflare_zone_identifier="' + shared.travisKey + '" -r PredixDev/' + dirName + ' --add', dir);
   };
 
   /**
@@ -58,6 +58,9 @@ var addKeyToTravis = (function() {
     .then(() => {
       // Success, we're done. Hit the callback.
       cb(null,dir);
+    })
+    .catch((e) => {
+      console.log(e);
     });
   };
 
